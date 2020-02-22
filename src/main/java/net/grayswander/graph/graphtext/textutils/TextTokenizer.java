@@ -13,9 +13,7 @@ import java.util.Queue;
 public class TextTokenizer implements Iterator<TextTokenizer.Token> {
     private BufferedReader reader;
     private long index = 0;
-    private long start = 0;
     private long current = 0;
-    private StringBuffer textBuffer;
     private Queue<Token> queue = new LinkedList<>();
 
     public TextTokenizer(InputStream inputStream) {
@@ -24,12 +22,12 @@ public class TextTokenizer implements Iterator<TextTokenizer.Token> {
 
     @SneakyThrows
     protected void prepareNextToken() {
-        this.start = this.current;
-        this.textBuffer = new StringBuffer();
+        long start = this.current;
+        StringBuffer textBuffer = new StringBuffer();
 
 
         int character;
-        while( queue.size() == 0 && (character = reader.read()) != -1) {
+        while((queue.size() == 0) && (((character = reader.read())) != -1)) {
 
             String symbol = Character.toString(character);
 
@@ -41,7 +39,7 @@ public class TextTokenizer implements Iterator<TextTokenizer.Token> {
                         this.queue.add(new Token(textBuffer.toString(), Token.Type.WORD, ++index, start, current));
                     }
                     start = current+1;
-                    this.textBuffer = new StringBuffer();
+                    textBuffer = new StringBuffer();
                     break;
                 case ".":
                 case "!":
@@ -51,7 +49,7 @@ public class TextTokenizer implements Iterator<TextTokenizer.Token> {
                     }
                     this.queue.add(new Token(symbol, Token.Type.SENTENCE_END_PUNCTUATION, ++index, current+1,current+1));
                     start = current+1;
-                    this.textBuffer = new StringBuffer();
+                    textBuffer = new StringBuffer();
                     break;
                 case  ",":
                 case ";":
@@ -61,7 +59,7 @@ public class TextTokenizer implements Iterator<TextTokenizer.Token> {
                     }
                     this.queue.add(new Token(symbol, Token.Type.IN_SENTENCE_PUNCTUATION, ++index, current+1,current+1));
                     start = current+1;
-                    this.textBuffer = new StringBuffer();
+                    textBuffer = new StringBuffer();
                     break;
                 case  "\"":
                 case "'":
@@ -71,7 +69,7 @@ public class TextTokenizer implements Iterator<TextTokenizer.Token> {
                     }
                     this.queue.add(new Token(symbol, Token.Type.QUOTES, ++index, current+1,current+1));
                     start = current+1;
-                    this.textBuffer = new StringBuffer();
+                    textBuffer = new StringBuffer();
                     break;
                 case  "(":
                 case ")":
@@ -84,17 +82,15 @@ public class TextTokenizer implements Iterator<TextTokenizer.Token> {
                     }
                     this.queue.add(new Token(symbol, Token.Type.PARENTHESES, ++index, current+1,current+1));
                     start = current+1;
-                    this.textBuffer = new StringBuffer();
+                    textBuffer = new StringBuffer();
                     break;
                 default:
                     textBuffer.append(symbol);
                     break;
             }
 
-            if (character == -1) {
-                if(textBuffer.length() > 0) {
-                    this.queue.add(new Token(textBuffer.toString(), Token.Type.WORD, ++index, start, current));
-                }
+            if(character == -1 && textBuffer.length() > 0) {
+                this.queue.add(new Token(textBuffer.toString(), Token.Type.WORD, ++index, start, current));
             }
 
             current++;
@@ -123,7 +119,7 @@ public class TextTokenizer implements Iterator<TextTokenizer.Token> {
         private long start;
         private long end;
 
-        public enum Type {WORD, IN_SENTENCE_PUNCTUATION, SENTENCE_END_PUNCTUATION, QUOTES, PARENTHESES, EOF}
+        public enum Type {WORD, IN_SENTENCE_PUNCTUATION, SENTENCE_END_PUNCTUATION, QUOTES, PARENTHESES}
 //        private static enum Capitalization {LOWER, UPPER, Capitalized}
     }
 
